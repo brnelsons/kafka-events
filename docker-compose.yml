@@ -4,6 +4,20 @@ services:
     build: ./kafka-events/
     ports:
       - "8080:8080"
+    environment:
+      DB_HOST: app-db
+      DB_PORT: 5432
+      DB_SCHEMA: app-db
+      DB_USER: app-user
+      DB_PASSWORD: app-password
+  app-db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: app-db
+      POSTGRES_USER: app-user
+      POSTGRES_PASSWORD: app-password
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.0.0
