@@ -5,12 +5,13 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DB_HOST: app-db
+      DB_HOST: app-postgres
       DB_PORT: 5432
       DB_SCHEMA: app-db
       DB_USER: app-user
       DB_PASSWORD: app-password
-  app-db:
+
+  app-postgres:
     image: postgres:13.0-alpine
     ports:
       - "5432:5432"

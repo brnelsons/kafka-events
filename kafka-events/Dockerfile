@@ -22,4 +22,5 @@ RUN chmod -R 777 /src/kafka-events
 FROM alpine:3.10
 RUN apk update && apk add ca-certificates
 COPY --from=build /src/kafka-events /app/
+COPY --from=build /src/migrations /app/
 CMD ["/app/kafka-events"]

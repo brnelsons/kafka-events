@@ -7,6 +7,9 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
+	"log"
+	"time"
 )
 
 type PgConnection struct {
@@ -31,7 +34,7 @@ func New(host string, port string, schema string, username string, password stri
 	}
 }
 
-func (pg *PgConnection) Connect() error {
+func (pg *PgConnection) Connect(timeout time.Duration) error {
 	if pg.isConnected {
 		fmt.Println("[WARN] sql: already connected to database")
 		return nil
@@ -41,7 +44,7 @@ func (pg *PgConnection) Connect() error {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		pg.host, pg.port, pg.username, pg.password, pg.schema)
 
-	connection, err := sql.Open("postgres", psqlInfo)
+	connection, err := Connect("postgres", psqlInfo, timeout)
 	if err == nil {
 		fmt.Println("[INFO] sql: successfully connected to database")
 		pg.connection = connection
@@ -85,10 +88,33 @@ func (pg *PgConnection) Migrate() error {
 			err)
 	}
 	err = instance.Up()
-	if err != nil {
+	if err != nil && err.Error() != "no change" {
 		return fmt.Errorf(
 			"[ERROR] sql: migration failed. \n\t%s",
 			err)
 	}
 	return nil
+}
+
+// ConnectLoop tries to connect to the DB under given DSN using a give driver
+// in a loop until connection succeeds. timeout specifies the timeout for the
+// loop.
+func Connect(driver, DSN string, timeout time.Duration) (*sql.DB, error) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	timeoutExceeded := time.After(timeout)
+	for {
+		select {
+		case <-timeoutExceeded:
+			return nil, fmt.Errorf("db connection failed after %s timeout", timeout)
+
+		case <-ticker.C:
+			db, err := sql.Open(driver, DSN)
+			if err == nil {
+				return db, nil
+			}
+			log.Println(errors.Wrapf(err, "failed to connect to db %s", DSN))
+		}
+	}
 }
