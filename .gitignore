@@ -1,2 +1,6 @@
 # ignore vendor directories.
 **/vendor
+
+# ignore IDEA files
+.idea/*
+!.idea/runConfigurations

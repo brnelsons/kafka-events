@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="kafka-events" />
+    <working_directory value="$PROJECT_DIR$/kafka-events" />
+    <envs>
+      <env name="DB_HOST" value="localhost" />
+      <env name="DB_PORT" value="5432" />
+      <env name="DB_USER" value="app-user" />
+      <env name="DB_PASSWORD" value="app-password" />
+      <env name="DB_SCHEMA" value="app-db" />
+    </envs>
+    <kind value="PACKAGE" />
+    <filePath value="$PROJECT_DIR$/kafka-events/main.go" />
+    <package value="kafka-events" />
+    <directory value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>
