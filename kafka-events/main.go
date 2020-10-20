@@ -1,20 +1,21 @@
 package main
 
 import (
-	"context"
-	"kafka-events/kafka"
-	"kafka-events/postgres"
-	"kafka-events/web"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"kafka-events/kafka"
+	"kafka-events/postgres"
+	"kafka-events/web"
+
 	"github.com/rs/cors"
 )
 
 const (
+	EnvAppPort           = "APP_PORT"
 	EnvDbHost            = "DB_HOST"
 	EnvDbPort            = "DB_PORT"
 	EnvDbSchema          = "DB_SCHEMA"
@@ -28,6 +29,7 @@ const (
 )
 
 func main() {
+	appPort := orElse(os.Getenv(EnvAppPort), ":8080")
 	dbHost := os.Getenv(EnvDbHost)
 	dbPort := os.Getenv(EnvDbPort)
 	dbSchema := os.Getenv(EnvDbSchema)
@@ -53,11 +55,6 @@ func main() {
 		strings.Split(kafkaBrokerCsv, ",")...,
 	)
 
-	err = kafkaService.Publish(context.Background(), "testing")
-	if err != nil {
-		panic(err)
-	}
-
 	// upon receiving a create request for an event via REST endpoints
 	// 1. process the event
 	// 2. save the event to the database
@@ -67,7 +64,7 @@ func main() {
 	router := web.NewRouter(ApiV1BasePath, GetRoutes(kafkaService, dbService))
 
 	log.Println("Successfully started.")
-	log.Fatal(http.ListenAndServe(":8081", setupGlobalMiddleware(router)))
+	log.Fatal(http.ListenAndServe(":"+appPort, setupGlobalMiddleware(router)))
 }
 
 // setupGlobalMiddleware will setup CORS

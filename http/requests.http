@@ -1,0 +1,14 @@
+GET http://localhost:8099/api/v1/events/test
+Accept: application/json
+
+###
+
+PUT http://localhost:8099/api/v1/events/test
+Accept: application/json
+Content-Type: application/json
+
+{
+
+}
+
+###
