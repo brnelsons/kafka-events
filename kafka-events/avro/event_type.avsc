@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "EventType",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    }
+  ]
+}

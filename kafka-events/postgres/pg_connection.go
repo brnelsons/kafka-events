@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type PgConnection struct {
+type DbService struct {
 	host        string
 	port        string
 	schema      string
@@ -22,8 +22,8 @@ type PgConnection struct {
 	isConnected bool
 }
 
-func New(host string, port string, schema string, username string, password string) *PgConnection {
-	return &PgConnection{
+func NewDbService(host string, port string, schema string, username string, password string) *DbService {
+	return &DbService{
 		host:        host,
 		port:        port,
 		schema:      schema,
@@ -34,54 +34,54 @@ func New(host string, port string, schema string, username string, password stri
 	}
 }
 
-func (pg *PgConnection) Connect(timeout time.Duration) error {
-	if pg.isConnected {
+func (service *DbService) Connect(timeout time.Duration) error {
+	if service.isConnected {
 		fmt.Println("[WARN] sql: already connected to database")
 		return nil
 	}
 	fmt.Println("[INFO] sql: connecting to database")
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		pg.host, pg.port, pg.username, pg.password, pg.schema)
+		service.host, service.port, service.username, service.password, service.schema)
 
 	connection, err := Connect("postgres", psqlInfo, timeout)
 	if err == nil {
 		fmt.Println("[INFO] sql: successfully connected to database")
-		pg.connection = connection
-		pg.isConnected = true
+		service.connection = connection
+		service.isConnected = true
 		return nil
 	} else {
 		return fmt.Errorf("[WARN] sql: failed connecting to database. \n\t%s", err)
 	}
 }
 
-func (pg *PgConnection) Disconnect() error {
-	if pg.isConnected == false || pg.connection == nil {
+func (service *DbService) Disconnect() error {
+	if service.isConnected == false || service.connection == nil {
 		fmt.Println("[WARN] sql: already disconnected from database")
 		return nil
 	}
-	err := pg.connection.Close()
+	err := service.connection.Close()
 	if err != nil {
 		fmt.Println("[INFO] sql: successfully disconnected from database")
-		pg.connection = nil
-		pg.isConnected = false
+		service.connection = nil
+		service.isConnected = false
 	} else {
 		fmt.Println("[WARN] sql: failed disconnecting from database")
 	}
 	return err
 }
 
-func (pg *PgConnection) Migrate() error {
-	if pg.isConnected == false {
+func (service *DbService) Migrate() error {
+	if service.isConnected == false {
 		return fmt.Errorf("[ERROR] sql: migration cannot occur when disconnected from the database")
 	}
-	driver, err := postgres.WithInstance(pg.connection, &postgres.Config{})
+	driver, err := postgres.WithInstance(service.connection, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf(
 			"[ERROR] sql: migration cannot occur when disconnected from the database. \n\t%s",
 			err)
 	}
-	instance, err := migrate.NewWithDatabaseInstance("file://migrations", pg.schema, driver)
+	instance, err := migrate.NewWithDatabaseInstance("file://migrations", service.schema, driver)
 	if err != nil {
 		return fmt.Errorf(
 			"[ERROR] sql: migration failed. \n\t%s",
